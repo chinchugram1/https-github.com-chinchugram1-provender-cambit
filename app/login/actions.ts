@@ -42,16 +42,13 @@ export async function loginAction(formData: FormData) {
     maxAge: 60 * 60 * 24 * 7,
   })
 
-  switch (data.rol) {
-    case "proveedor":
-      redirect("/proveedor")
-    case "cliente":
-      redirect("/cliente")
-    case "transportista":
-      redirect("/transportista")
-    default:
-      redirect("/")
-  }
+switch (data.rol) {
+  case 'proveedor':     redirect('/proveedor/dashboard');
+  case 'cliente':       redirect('/cliente/dashboard');
+  case 'transportista': redirect('/transportista/dashboard');
+  default:              redirect('/');
+}
+
 }
 
 export async function logoutAction() {
