@@ -1,18 +1,15 @@
-"use server"
+'use server';
 
-import { redirect } from "next/navigation"
-import { cookies } from "next/headers"
-import { admin } from "@/lib/supabase/admin"
-import { compare } from "bcryptjs"
-import { createSession, cookieName } from "@/lib/session"
+import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
+import { admin } from '@/lib/supabase/admin';
+import { compare } from 'bcryptjs';
+import { createSession, cookieName } from '@/lib/session';
+import { isRedirectError } from 'next/dist/client/components/redirect'; // 👈
 
 export async function loginAction(formData: FormData) {
-  console.log("🔍 [ACTION] loginAction iniciado")
-
-  const email = String(formData.get("email") || "")
-    .trim()
-    .toLowerCase()
-  const password = String(formData.get("password") || "")
+  const email = String(formData.get('email') || '').trim().toLowerCase();
+  const password = String(formData.get('password') || '');
 
   console.log("🔍 [ACTION] Email:", email)
   console.log("🔍 [ACTION] Password length:", password?.length)
@@ -51,40 +48,27 @@ export async function loginAction(formData: FormData) {
     }
 
     console.log("✅ Contraseña correcta, creando sesión...")
-    const token = await createSession({
-      uid: data.id,
-      empresa_id: data.empresa_id,
-      rol: data.rol as "proveedor" | "cliente" | "transportista",
-    })
+  const token = await createSession({
+    uid: data.id,
+    empresa_id: data.empresa_id,
+    rol: data.rol as 'proveedor'|'cliente'|'transportista',
+  });
 
-    const cookieStore = cookies()
-    cookieStore.set(cookieName, token, {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 7, // 7 días
-    })
+  cookies().set(cookieName, token, {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production', // en Vercel queda true
+    path: '/',
+    maxAge: 60 * 60 * 24 * 7,
+  });
 
     console.log("✅ Login exitoso, redirigiendo según rol:", data.rol)
 
-    switch (data.rol) {
-      case "proveedor":
-        console.log("🔄 [ACTION] Redirigiendo a /proveedor")
-        redirect("/proveedor")
-      case "cliente":
-        console.log("🔄 [ACTION] Redirigiendo a /cliente")
-        redirect("/cliente")
-      case "transportista":
-        console.log("🔄 [ACTION] Redirigiendo a /transportista")
-        redirect("/transportista")
-      default:
-        console.log("🔄 [ACTION] Redirigiendo a / (default)")
-        redirect("/")
-    }
-  } catch (error) {
-    console.log("❌ Error inesperado:", error)
-    return { error: "Error interno del servidor" }
+  switch (data.rol) {
+    case 'proveedor':     redirect('/proveedor');
+    case 'cliente':       redirect('/cliente');
+    case 'transportista': redirect('/transportista');
+    default:              redirect('/');
   }
 }
 
