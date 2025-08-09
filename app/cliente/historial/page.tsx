@@ -1,263 +1,233 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Clock, CheckCircle, XCircle, Package, Calendar } from "lucide-react"
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Calendar, Package, Search, Filter, Eye } from "lucide-react"
 import Link from "next/link"
 
-interface Order {
+interface Pedido {
   id: string
-  date: string
-  status: "pendiente" | "confirmado" | "entregado" | "cancelado"
+  fecha: string
   total: number
+  estado: string
   items: number
-  estimatedDelivery?: string
-  sucursal?: string
+  proveedor: string
 }
 
-// Pedidos para razón social (todas las sucursales)
-const mockOrdersRazonSocial: Order[] = [
-  {
-    id: "PED-001",
-    date: "2024-01-15",
-    status: "entregado",
-    total: 1250,
-    items: 5,
-    estimatedDelivery: "2024-01-15",
-    sucursal: "Sucursal Centro",
-  },
-  {
-    id: "PED-002",
-    date: "2024-01-18",
-    status: "confirmado",
-    total: 890,
-    items: 3,
-    estimatedDelivery: "2024-01-19",
-    sucursal: "Sucursal Norte",
-  },
-  {
-    id: "PED-003",
-    date: "2024-01-20",
-    status: "pendiente",
-    total: 1580,
-    items: 7,
-    estimatedDelivery: "2024-01-21",
-    sucursal: "Sucursal Centro",
-  },
-  {
-    id: "PED-004",
-    date: "2024-01-12",
-    status: "cancelado",
-    total: 650,
-    items: 2,
-    sucursal: "Sucursal Sur",
-  },
-]
-
-// Pedidos para sucursal específica
-const mockOrdersSucursal: Order[] = [
-  {
-    id: "PED-SUC-001",
-    date: "2024-01-18",
-    status: "entregado",
-    total: 650,
-    items: 3,
-    estimatedDelivery: "2024-01-18",
-  },
-  {
-    id: "PED-SUC-002",
-    date: "2024-01-20",
-    status: "confirmado",
-    total: 420,
-    items: 2,
-    estimatedDelivery: "2024-01-21",
-  },
-  {
-    id: "PED-SUC-003",
-    date: "2024-01-16",
-    status: "entregado",
-    total: 890,
-    items: 4,
-    estimatedDelivery: "2024-01-16",
-  },
-]
-
 export default function HistorialPage() {
-  const [selectedStatus, setSelectedStatus] = useState<string>("todos")
-  const [userType, setUserType] = useState<"razon-social" | "sucursal">("sucursal")
+  const [searchTerm, setSearchTerm] = useState("")
+  const [statusFilter, setStatusFilter] = useState("todos")
+  const [dateFilter, setDateFilter] = useState("todos")
 
-  useEffect(() => {
-    const type = localStorage.getItem("userType") as "razon-social" | "sucursal"
-    if (type) {
-      setUserType(type)
-    }
-  }, [])
+  // Mock data - en producción vendría de la API
+  const pedidos: Pedido[] = [
+    {
+      id: "PED-001",
+      fecha: "2024-01-15",
+      total: 2850,
+      estado: "Entregado",
+      items: 8,
+      proveedor: "Distribuidora Central",
+    },
+    {
+      id: "PED-002",
+      fecha: "2024-01-12",
+      total: 1920,
+      estado: "En camino",
+      items: 5,
+      proveedor: "Distribuidora Central",
+    },
+    {
+      id: "PED-003",
+      fecha: "2024-01-10",
+      total: 3450,
+      estado: "Entregado",
+      items: 12,
+      proveedor: "Distribuidora Central",
+    },
+    {
+      id: "PED-004",
+      fecha: "2024-01-08",
+      total: 1580,
+      estado: "Cancelado",
+      items: 4,
+      proveedor: "Distribuidora Central",
+    },
+    {
+      id: "PED-005",
+      fecha: "2024-01-05",
+      total: 4200,
+      estado: "Entregado",
+      items: 15,
+      proveedor: "Distribuidora Central",
+    },
+  ]
 
-  // Seleccionar pedidos según el tipo de usuario
-  const allOrders = userType === "razon-social" ? mockOrdersRazonSocial : mockOrdersSucursal
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "pendiente":
-        return <Clock className="w-5 h-5 text-yellow-500" />
-      case "confirmado":
-        return <Package className="w-5 h-5 text-blue-500" />
-      case "entregado":
-        return <CheckCircle className="w-5 h-5 text-green-500" />
-      case "cancelado":
-        return <XCircle className="w-5 h-5 text-red-500" />
-      default:
-        return <Clock className="w-5 h-5 text-gray-500" />
-    }
-  }
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case "pendiente":
-        return "Pendiente"
-      case "confirmado":
-        return "Confirmado"
-      case "entregado":
-        return "Entregado"
-      case "cancelado":
-        return "Cancelado"
-      default:
-        return status
-    }
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "pendiente":
-        return "bg-yellow-100 text-yellow-800"
-      case "confirmado":
-        return "bg-blue-100 text-blue-800"
-      case "entregado":
+  const getStatusColor = (estado: string) => {
+    switch (estado) {
+      case "Entregado":
         return "bg-green-100 text-green-800"
-      case "cancelado":
+      case "En camino":
+        return "bg-blue-100 text-blue-800"
+      case "Confirmado":
+        return "bg-yellow-100 text-yellow-800"
+      case "Cancelado":
         return "bg-red-100 text-red-800"
       default:
         return "bg-gray-100 text-gray-800"
     }
   }
 
-  const filteredOrders =
-    selectedStatus === "todos" ? allOrders : allOrders.filter((order) => order.status === selectedStatus)
+  const filteredPedidos = pedidos.filter((pedido) => {
+    const matchesSearch = pedido.id.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesStatus = statusFilter === "todos" || pedido.estado.toLowerCase() === statusFilter.toLowerCase()
+    return matchesSearch && matchesStatus
+  })
 
-  const statusOptions = [
-    { value: "todos", label: "Todos" },
-    { value: "pendiente", label: "Pendientes" },
-    { value: "confirmado", label: "Confirmados" },
-    { value: "entregado", label: "Entregados" },
-    { value: "cancelado", label: "Cancelados" },
-  ]
+  const totalGastado = pedidos.filter((p) => p.estado === "Entregado").reduce((sum, pedido) => sum + pedido.total, 0)
 
   return (
-    <div className="p-4 space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          {userType === "razon-social" ? "Historial de Pedidos - Todas las Sucursales" : "Mi Historial de Pedidos"}
-        </h1>
-        <p className="text-gray-600">
-          {userType === "razon-social"
-            ? "Revisá el estado de todos los pedidos de tus sucursales"
-            : "Revisá el estado de todos tus pedidos"}
-        </p>
+    <div className="container mx-auto p-6">
+      <div className="flex items-center gap-2 mb-6">
+        <Package className="h-6 w-6" />
+        <h1 className="text-2xl font-bold">Historial de Pedidos</h1>
       </div>
 
-      {/* Status Filter */}
-      <div className="flex space-x-2 overflow-x-auto pb-2">
-        {statusOptions.map((option) => (
-          <button
-            key={option.value}
-            onClick={() => setSelectedStatus(option.value)}
-            className={`px-4 py-2 rounded-full whitespace-nowrap transition-colors ${
-              selectedStatus === option.value
-                ? "bg-provender-primary text-white"
-                : "bg-white text-gray-700 border border-gray-200 hover:border-provender-primary"
-            }`}
-          >
-            {option.label}
-          </button>
-        ))}
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total de Pedidos</p>
+                <p className="text-2xl font-bold">{pedidos.length}</p>
+              </div>
+              <Package className="h-8 w-8 text-blue-600" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total Gastado</p>
+                <p className="text-2xl font-bold">${totalGastado.toLocaleString()}</p>
+              </div>
+              <Calendar className="h-8 w-8 text-green-600" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Pedidos Entregados</p>
+                <p className="text-2xl font-bold">{pedidos.filter((p) => p.estado === "Entregado").length}</p>
+              </div>
+              <Package className="h-8 w-8 text-purple-600" />
+            </div>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Filters */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Filter className="h-5 w-5" />
+            Filtros
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Buscar por ID de pedido..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Estado" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todos los estados</SelectItem>
+                <SelectItem value="entregado">Entregado</SelectItem>
+                <SelectItem value="en camino">En camino</SelectItem>
+                <SelectItem value="confirmado">Confirmado</SelectItem>
+                <SelectItem value="cancelado">Cancelado</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={dateFilter} onValueChange={setDateFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Período" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todos los períodos</SelectItem>
+                <SelectItem value="ultima-semana">Última semana</SelectItem>
+                <SelectItem value="ultimo-mes">Último mes</SelectItem>
+                <SelectItem value="ultimos-3-meses">Últimos 3 meses</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Orders List */}
-      <div className="space-y-4">
-        {filteredOrders.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Package className="w-12 h-12 text-gray-400" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No hay pedidos</h3>
-            <p className="text-gray-600">No se encontraron pedidos con el filtro seleccionado</p>
-          </div>
-        ) : (
-          filteredOrders.map((order) => (
-            <div key={order.id} className="card">
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <h3 className="font-semibold text-gray-900">Pedido {order.id}</h3>
-                  <div className="flex items-center space-x-2 mt-1">
-                    <Calendar className="w-4 h-4 text-gray-400" />
-                    <span className="text-sm text-gray-600">{new Date(order.date).toLocaleDateString("es-AR")}</span>
+      <Card>
+        <CardHeader>
+          <CardTitle>Pedidos ({filteredPedidos.length})</CardTitle>
+          <CardDescription>Lista de todos tus pedidos realizados</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {filteredPedidos.map((pedido) => (
+              <div key={pedido.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-[#0492C2]/10 rounded-lg flex items-center justify-center">
+                    <Package className="h-6 w-6 text-[#0492C2]" />
                   </div>
-                  {userType === "razon-social" && order.sucursal && (
-                    <div className="mt-1">
-                      <span className="text-xs bg-provender-primary/10 text-provender-primary px-2 py-1 rounded-full">
-                        {order.sucursal}
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  {getStatusIcon(order.status)}
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-                    {getStatusText(order.status)}
-                  </span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                  <span className="text-sm text-gray-600">Total</span>
-                  <p className="font-semibold text-lg text-gray-900">${order.total}</p>
-                </div>
-                <div>
-                  <span className="text-sm text-gray-600">Productos</span>
-                  <p className="font-semibold text-lg text-gray-900">{order.items} items</p>
-                </div>
-              </div>
-
-              {order.estimatedDelivery && order.status !== "entregado" && order.status !== "cancelado" && (
-                <div className="bg-provender-light/10 p-3 rounded-lg mb-4">
-                  <div className="flex items-center space-x-2">
-                    <Clock className="w-4 h-4 text-provender-primary" />
-                    <span className="text-sm text-provender-primary font-medium">
-                      Entrega estimada: {new Date(order.estimatedDelivery).toLocaleDateString("es-AR")}
-                    </span>
+                  <div>
+                    <p className="font-semibold">{pedido.id}</p>
+                    <p className="text-sm text-gray-600">
+                      {pedido.items} productos • {pedido.proveedor}
+                    </p>
+                    <p className="text-xs text-gray-500">{new Date(pedido.fecha).toLocaleDateString()}</p>
                   </div>
                 </div>
-              )}
-
-              <div className="flex space-x-3">
-                <Link
-                  href={`/cliente/historial/${order.id}`}
-                  className="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-200 transition-colors text-center"
-                >
-                  Ver Detalle
-                </Link>
-                {order.status === "entregado" && (
-                  <Link href="/cliente/pedido/nuevo" className="flex-1 btn-primary text-center">
-                    Repetir Pedido
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
+                    <p className="font-bold">${pedido.total.toLocaleString()}</p>
+                    <Badge className={getStatusColor(pedido.estado)}>{pedido.estado}</Badge>
+                  </div>
+                  <Link href={`/cliente/historial/${pedido.id}`}>
+                    <Button variant="outline" size="sm">
+                      <Eye className="h-4 w-4 mr-2" />
+                      Ver Detalle
+                    </Button>
                   </Link>
-                )}
+                </div>
               </div>
+            ))}
+          </div>
+
+          {filteredPedidos.length === 0 && (
+            <div className="text-center py-12">
+              <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">No se encontraron pedidos</h3>
+              <p className="text-gray-600 mb-4">No hay pedidos que coincidan con los filtros seleccionados</p>
+              <Button>Hacer Nuevo Pedido</Button>
             </div>
-          ))
-        )}
-      </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }

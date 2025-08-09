@@ -1,50 +1,54 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { validateJWTToken } from "@/lib/auth"
+import { readSession } from "@/lib/session"
 
-export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl
+export async function middleware(req: NextRequest) {
+  const url = req.nextUrl.clone()
+  const token = req.cookies.get("session")?.value
+  const sess = await readSession(token)
+  const path = req.nextUrl.pathname
 
-  // Rutas públicas que no requieren autenticación
-  const publicRoutes = ["/"]
+  console.log("🔍 [MIDDLEWARE] Path:", path, "Session:", !!sess)
 
-  if (publicRoutes.includes(pathname)) {
-    return NextResponse.next()
+  // La página de login es la raíz "/"
+  const isLogin = path === "/"
+
+  // Si no hay sesión y no está en login, redirigir a "/"
+  if (!sess && !isLogin) {
+    console.log("🔄 [MIDDLEWARE] Sin sesión, redirigiendo a /")
+    url.pathname = "/"
+    return NextResponse.redirect(url)
   }
 
-  // Obtener token de la cookie
-  const token = request.cookies.get("session_token")?.value
-
-  if (!token) {
-    return NextResponse.redirect(new URL("/", request.url))
+  // Si hay sesión y está en login, redirigir a su panel
+  if (sess && isLogin) {
+    const targetPath = sess.rol === "proveedor" ? "/proveedor" : sess.rol === "cliente" ? "/cliente" : "/transportista"
+    console.log("🔄 [MIDDLEWARE] Con sesión en login, redirigiendo a:", targetPath)
+    url.pathname = targetPath
+    return NextResponse.redirect(url)
   }
 
-  // Validar JWT
-  const payload = await validateJWTToken(token)
-
-  if (!payload) {
-    const response = NextResponse.redirect(new URL("/", request.url))
-    response.cookies.delete("session_token")
-    return response
-  }
-
-  // Verificar autorización por rol
-  const userRole = payload.rol
-
-  if (pathname.startsWith("/proveedor") && userRole !== "proveedor" && userRole !== "admin") {
-    return NextResponse.redirect(new URL("/", request.url))
-  }
-
-  if (pathname.startsWith("/cliente") && userRole !== "cliente") {
-    return NextResponse.redirect(new URL("/", request.url))
-  }
-
-  if (pathname.startsWith("/transportista") && userRole !== "transportista") {
-    return NextResponse.redirect(new URL("/", request.url))
+  // Protección de rutas por rol
+  if (sess) {
+    if (path.startsWith("/proveedor") && sess.rol !== "proveedor") {
+      console.log("❌ [MIDDLEWARE] Acceso denegado a /proveedor")
+      url.pathname = "/"
+      return NextResponse.redirect(url)
+    }
+    if (path.startsWith("/cliente") && sess.rol !== "cliente") {
+      console.log("❌ [MIDDLEWARE] Acceso denegado a /cliente")
+      url.pathname = "/"
+      return NextResponse.redirect(url)
+    }
+    if (path.startsWith("/transportista") && sess.rol !== "transportista") {
+      console.log("❌ [MIDDLEWARE] Acceso denegado a /transportista")
+      url.pathname = "/"
+      return NextResponse.redirect(url)
+    }
   }
 
   return NextResponse.next()
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|public).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|api).*)"],
 }

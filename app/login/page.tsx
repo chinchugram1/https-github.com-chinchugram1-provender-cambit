@@ -1,5 +1,4 @@
 "use client"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -7,7 +6,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2, Eye, EyeOff } from "lucide-react"
 import Image from "next/image"
-import { loginAction } from "./actions/auth"
+import { loginAction } from "./actions"
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -24,7 +23,6 @@ export default function LoginPage() {
         setError(result.error)
       }
     } catch (error) {
-      console.error("Error en handleSubmit:", error)
       setError("Error de conexión. Intenta nuevamente.")
     } finally {
       setIsLoading(false)

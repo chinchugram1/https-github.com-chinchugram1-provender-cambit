@@ -1,30 +1,32 @@
-# provenderh8
+# PROVENDER
 
-*Automatically synced with your [v0.dev](https://v0.dev) deployments*
+Plataforma integral para la gestión de distribuidores informales en Argentina.
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/chinchugram1s-projects/v0-provenderh8)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.dev-black?style=for-the-badge)](https://v0.dev/chat/projects/WyEl8Csxixb)
+## Tecnologías
 
-## Overview
+- Next.js 15 (App Router)
+- React 19
+- TypeScript
+- Tailwind CSS
+- Supabase
+- shadcn/ui
 
-This repository will stay in sync with your deployed chats on [v0.dev](https://v0.dev).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.dev](https://v0.dev).
+## Instalación
 
-## Deployment
+\`\`\`bash
+npm install
+npm run dev
+\`\`\`
 
-Your project is live at:
+## Estructura
 
-**[https://vercel.com/chinchugram1s-projects/v0-provenderh8](https://vercel.com/chinchugram1s-projects/v0-provenderh8)**
+- `/app` - Páginas y rutas de la aplicación
+- `/components` - Componentes reutilizables
+- `/lib` - Utilidades y configuraciones
+- `/scripts` - Scripts de base de datos
 
-## Build your app
+## Roles de Usuario
 
-Continue building your app on:
-
-**[https://v0.dev/chat/projects/WyEl8Csxixb](https://v0.dev/chat/projects/WyEl8Csxixb)**
-
-## How It Works
-
-1. Create and modify your project using [v0.dev](https://v0.dev)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+- **Proveedor**: Gestión completa del negocio
+- **Cliente**: Plataforma de compras
+- **Transportista**: Gestión de entregas
